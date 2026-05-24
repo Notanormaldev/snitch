@@ -10,8 +10,10 @@ if(!process.env.JWT){
 }
 
 
-
-export default config={
+ const config={
     MONGOURI:process.env.MONGO_URI ,
     JWT:process.env.JWT
 }
+
+
+export default config
