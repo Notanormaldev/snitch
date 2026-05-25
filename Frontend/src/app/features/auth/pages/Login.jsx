@@ -1,17 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import LocomotiveScroll from 'locomotive-scroll'
 import 'locomotive-scroll/dist/locomotive-scroll.css'
 import Logo from '../components/Logo'
+import { useauth } from '../hook/useauth'
 import './Auth.css'
 
 function Login() {
+  const navigate = useNavigate()
+  const { handlelogin, loading } = useauth()
+
   const [emailOrPhone, setEmailOrPhone] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
 
   // Refs for GSAP animations
   const scrollRef = useRef(null)
@@ -138,7 +141,7 @@ function Login() {
     }
   }, [])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     
@@ -151,13 +154,42 @@ function Login() {
       return
     }
 
-    setLoading(true)
+    const isEmail = emailOrPhone.includes('@')
+    const payload = {
+      password,
+      email: isEmail ? emailOrPhone.trim() : undefined,
+      contact: !isEmail ? emailOrPhone.trim() : undefined
+    }
 
-    // Mimic API request
-    setTimeout(() => {
-      setLoading(false)
-      alert(`LUOMI Authentication Successful for: ${emailOrPhone}`)
-    }, 1500)
+    // Client-side validations
+    if (isEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(emailOrPhone)) {
+        setError('Please enter a valid email address.')
+        return
+      }
+    } else {
+      const contactRegex = /^[0-9]{10}$/
+      if (!contactRegex.test(emailOrPhone)) {
+        setError('Contact number must be exactly 10 digits.')
+        return
+      }
+    }
+
+    try {
+      const res = await handlelogin(payload)
+      if (res && res.success) {
+        navigate('/')
+      }
+    } catch (err) {
+      if (err.errors && Array.isArray(err.errors)) {
+        setError(err.errors[0].msg)
+      } else if (err.msg) {
+        setError(err.msg)
+      } else {
+        setError('Login failed. Please check your credentials and try again.')
+      }
+    }
   }
 
   const headingText = "Welcome Back"

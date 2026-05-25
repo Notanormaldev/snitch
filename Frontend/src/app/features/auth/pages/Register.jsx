@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import LocomotiveScroll from 'locomotive-scroll'
 import 'locomotive-scroll/dist/locomotive-scroll.css'
 import Logo from '../components/Logo'
+import { useauth } from '../hook/useauth'
 import './Auth.css'
 
 function Register() {
+  const navigate = useNavigate()
+  const { handleregister, loading } = useauth()
+
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [contactNumber, setContactNumber] = useState('')
@@ -14,7 +18,6 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [isSeller, setIsSeller] = useState(false)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
 
   // Refs for GSAP animations
   const scrollRef = useRef(null)
@@ -142,34 +145,71 @@ function Register() {
     }
   }, [])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     
+    // Client-side validations matching the backend rules for instant feedback
     if (!fullName) {
-      setError('Please enter your full name.')
+      setError('Full Name is required.')
+      return
+    }
+    if (fullName.trim().length < 3) {
+      setError('Full Name must be at least 3 characters long.')
       return
     }
     if (!email) {
-      setError('Please enter your email address.')
+      setError('Email address is required.')
+      return
+    }
+    // Simple email regex check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.')
       return
     }
     if (!contactNumber) {
-      setError('Please enter your contact number.')
+      setError('Contact number is required.')
+      return
+    }
+    // Contact 10 digit check
+    const contactRegex = /^[0-9]{10}$/
+    if (!contactRegex.test(contactNumber)) {
+      setError('Contact number must be exactly 10 digits.')
       return
     }
     if (!password) {
-      setError('Please enter your password.')
+      setError('Password is required.')
+      return
+    }
+    // Password complexity check: >= 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special char
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+    if (!passwordRegex.test(password)) {
+      setError('Password must be at least 8 characters long, and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).')
       return
     }
 
-    setLoading(true)
-
-    // Mimic API request
-    setTimeout(() => {
-      setLoading(false)
-      alert(`Account created successfully! Welcome to LUOMI, ${fullName}. Seller Mode: ${isSeller}`)
-    }, 1500)
+    try {
+      const res = await handleregister({
+        email,
+        contact: contactNumber,
+        fullname: fullName,
+        password,
+        isseller: isSeller
+      })
+      if (res && res.success) {
+        navigate('/')
+      }
+    } catch (err) {
+      if (err.errors && Array.isArray(err.errors)) {
+        // express-validator error array - pick the first error message
+        setError(err.errors[0].msg)
+      } else if (err.msg) {
+        setError(err.msg)
+      } else {
+        setError('Registration failed. Please check your credentials and try again.')
+      }
+    }
   }
 
   const headingText = "Create Account"

@@ -8,7 +8,7 @@ const authslice=createSlice({
     },
     reducers:{
         setuser:(state,action)=>{
-            state.user=action.playload
+            state.user=action.payload
         },
         setloading:(state,action)=>{
             state.loading=action.payload

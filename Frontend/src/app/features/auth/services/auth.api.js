@@ -11,7 +11,7 @@ export async function register({email,contact,password,fullname,isseller}){
 
         return res.data
      } catch (error) {
-        console.log(error)
+        throw error.response?.data || { msg: "Registration failed" }
      }
 
 }
@@ -21,7 +21,7 @@ export async function login({email,contact,password}){
 
         return res.data
      } catch (error) {
-        console.log(error)
+        throw error.response?.data || { msg: "Login failed" }
      }
 }
 export async function getme(){
@@ -29,6 +29,6 @@ export async function getme(){
         const res=await authapi.get('/get-me')
         return res.data
      } catch (error) {
-        console.log(error)
+        throw error.response?.data || { msg: "Failed to fetch user session" }
      }
 }
