@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken"
 async function tokenresponse(user,res,msg){
    const token = jwt.sign({
     id:user._id,
-   },config.JWT)
+   },config.JWT,{expiresIn:'7d'})
 
    res.cookie('token',token)
   
@@ -38,7 +38,7 @@ async function register(req,res){
 
 
     const user =await usermodel.create({
-        email,contact,fullname,password,isseller
+        email,contact,fullname,password,role:isseller ? "seller" :"buyer"
     })
 
   await tokenresponse(user,res,msg="User register successfully");
@@ -54,7 +54,39 @@ async function register(req,res){
 
 }
 async function login(req,res){
+  const {contact,email,password} = req.body
 
+  try {
+    
+  const user = await usermodel.findOne({
+    $or:[
+        {email},{contact}
+    ]
+  })
+
+  if(!user){
+    return res.status(400).json({
+        msg:"user not exist please register"
+    })
+  }
+
+  const isvalid = await user.comparePassword(password),
+
+  if(!isvalid){
+    return res.status(401).json({
+   msg:"Invalid password"
+    })
+
+    await tokenresponse(user,res,msg="Login successfully")
+    
+  }
+
+  } catch (error) {
+      console.log(error);
+    return res.status(500).json({
+        msg:"server error"
+    })
+  }
 }
 
 
