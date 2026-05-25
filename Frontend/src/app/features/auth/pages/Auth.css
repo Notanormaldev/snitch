@@ -34,6 +34,20 @@ body {
   font-family: 'DM Sans', sans-serif;
 }
 
+/* Disable user selection on premium interactive & branded elements to feel like native app components */
+button,
+.cta-button,
+h1,
+.logo-container,
+.font-heading,
+label,
+.auth-label {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 /* Custom scroll area reset */
 [data-scroll-container] {
   width: 100%;
