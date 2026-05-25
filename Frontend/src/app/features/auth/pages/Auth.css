@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:wght@100..900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* Brand Design Tokens & Custom CSS styles */
+
+body {
+  margin: 0;
+  background-color: #0A0A0A;
+  color: #F0F0F0;
+  overflow-x: hidden;
+}
+
+/* Custom fonts */
+.font-logo {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.font-heading {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-label {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-body {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-cta {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-legal {
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Custom scroll area reset */
+[data-scroll-container] {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #0A0A0A;
+}
+
+/* Custom interactive elements */
+.auth-input-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.auth-input {
+  width: 100%;
+  height: 52px;
+  background-color: #111111;
+  border: 0.5px solid #2A2A2A;
+  border-radius: 2px;
+  padding: 14px 16px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  color: #F0F0F0;
+  outline: none;
+  transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-input::placeholder {
+  color: #444444;
+}
+
+.auth-input:focus {
+  border-color: #C0C0C0;
+}
+
+/* Input floating label (always up, uppercase, Space Grotesk) */
+.auth-label {
+  display: block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #888888;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+/* Focus underline indicator */
+.input-underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  width: 0%;
+  background-color: #C0C0C0;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-input:focus ~ .input-underline {
+  width: 100%;
+}
+
+/* Custom cursor */
+.custom-cursor-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+}
+
+.custom-cursor-ring {
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+}
+
+/* Hovering buttons cursors */
+.custom-cursor-ring.hovered {
+  width: 60px;
+  height: 60px;
+  border-color: #C0C0C0;
+}
+
+/* Hide cursor on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .custom-cursor-dot,
+  .custom-cursor-ring {
+    display: none;
+  }
+}
+
+/* CTA button style */
+.cta-button {
+  width: 100%;
+  height: 52px;
+  background: linear-gradient(135deg, #1A1A1A, #2E2E2E);
+  border: 0.5px solid #C0C0C0;
+  color: #F0F0F0;
+  border-radius: 2px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.3s ease, letter-spacing 0.3s ease, border-color 0.3s ease;
+}
+
+.cta-button:hover {
+  background: #2E2E2E;
+  letter-spacing: 4px;
+  border-color: #FFFFFF;
+}
+
+.cta-button:active {
+  background: #111111;
+  letter-spacing: 3px;
+}
+
+/* Pill Toggle styling for isSeller */
+.switch-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  color: #888888;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.3s ease;
+}
+
+.switch-container.active {
+  color: #C0C0C0;
+}
+
+.pill-switch {
+  width: 24px;
+  height: 12px;
+  background-color: #222222;
+  border-radius: 6px;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.switch-container.active .pill-switch {
+  background-color: #C0C0C0;
+}
+
+.pill-switch-handle {
+  width: 8px;
+  height: 8px;
+  background-color: #888888;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+}
+
+.switch-container.active .pill-switch-handle {
+  transform: translateX(12px);
+  background-color: #0A0A0A;
+}
+
+/* Responsive columns scaling details */
+@media (max-width: 768px) {
+  .editorial-column {
+    display: none !important;
+  }
+  .form-column {
+    width: 100% !important;
+    padding: 24px !important;
+  }
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

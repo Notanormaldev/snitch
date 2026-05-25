@@ -1,9 +1,322 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
+import gsap from 'gsap'
+import LocomotiveScroll from 'locomotive-scroll'
+import 'locomotive-scroll/dist/locomotive-scroll.css'
+import Logo from '../components/Logo'
+import './Auth.css'
 
 function Login() {
+  const [emailOrPhone, setEmailOrPhone] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  // Refs for GSAP animations
+  const scrollRef = useRef(null)
+  const cursorDotRef = useRef(null)
+  const cursorRingRef = useRef(null)
+  const buttonRef = useRef(null)
+  const editorialRef = useRef(null)
+
+  useEffect(() => {
+    // 1. Initialize Locomotive Scroll
+    let scroll
+    if (scrollRef.current) {
+      scroll = new LocomotiveScroll({
+        el: scrollRef.current,
+        smooth: true,
+        multiplier: 1.0,
+      })
+    }
+
+    // 2. Custom Cursor Movement
+    const onMouseMove = (e) => {
+      const { clientX, clientY } = e
+      
+      // Instantly position the dot
+      gsap.to(cursorDotRef.current, {
+        x: clientX,
+        y: clientY,
+        duration: 0,
+      })
+      
+      // Smoothly lag the ring behind the dot
+      gsap.to(cursorRingRef.current, {
+        x: clientX,
+        y: clientY,
+        duration: 0.15,
+        ease: 'power2.out',
+      })
+    };
+
+    window.addEventListener('mousemove', onMouseMove)
+
+    // 3. Page Entrance Animations
+    const entranceTimeline = gsap.timeline()
+    
+    // Logo entrance
+    entranceTimeline.fromTo('.logo-container', 
+      { y: -20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }
+    )
+
+    // Divider line
+    entranceTimeline.fromTo('.divider-line', 
+      { scaleX: 0, opacity: 0 },
+      { scaleX: 1, opacity: 1, duration: 0.6, ease: 'power2.inOut' },
+      '-=0.4'
+    )
+
+    // Heading splits and falls in
+    entranceTimeline.fromTo('.heading-char',
+      { y: 30, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1.0, stagger: 0.03, ease: 'expo.out' },
+      '-=0.4'
+    )
+
+    // Input fields stagger in from the left
+    entranceTimeline.fromTo('.auth-input-wrapper',
+      { x: -20, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out' },
+      '-=0.6'
+    )
+
+    // CTA button fade entrance
+    entranceTimeline.fromTo(buttonRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.6, ease: 'power2.out' },
+      '-=0.5'
+    )
+
+    // Google Sign In & Footer links
+    entranceTimeline.fromTo('.footer-animate',
+      { y: 15, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'power2.out' },
+      '-=0.4'
+    )
+
+    // Left editorial column slide-in + blur fade
+    gsap.fromTo(editorialRef.current,
+      { x: -60, filter: 'blur(10px)', opacity: 0 },
+      { x: 0, filter: 'blur(0px)', opacity: 1, duration: 1.2, ease: 'power4.out' }
+    )
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      if (scroll) scroll.destroy()
+    }
+  }, [])
+
+  // 4. CTA Button Hover Setup (only for custom cursor scaling)
+  useEffect(() => {
+    const button = buttonRef.current
+    if (!button) return
+
+    const handleMouseEnter = () => {
+      if (cursorRingRef.current) {
+        cursorRingRef.current.classList.add('hovered')
+      }
+    }
+
+    const handleMouseLeave = () => {
+      if (cursorRingRef.current) {
+        cursorRingRef.current.classList.remove('hovered')
+      }
+    }
+
+    button.addEventListener('mouseenter', handleMouseEnter)
+    button.addEventListener('mouseleave', handleMouseLeave)
+
+    return () => {
+      if (button) {
+        button.removeEventListener('mouseenter', handleMouseEnter)
+        button.removeEventListener('mouseleave', handleMouseLeave)
+      }
+    }
+  }, [])
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setError('')
+    
+    if (!emailOrPhone) {
+      setError('Please enter your email or contact number.')
+      return
+    }
+    if (!password) {
+      setError('Please enter your password.')
+      return
+    }
+
+    setLoading(true)
+
+    // Mimic API request
+    setTimeout(() => {
+      setLoading(false)
+      alert(`LUOMI Authentication Successful for: ${emailOrPhone}`)
+    }, 1500)
+  }
+
+  const headingText = "Welcome Back"
+
   return (
-    <div>
-      login
+    <div data-scroll-container ref={scrollRef} className="w-full min-h-screen bg-[#0A0A0A] flex flex-row overflow-hidden relative">
+      {/* Custom Cursors */}
+      <div ref={cursorDotRef} className="custom-cursor-dot" />
+      <div ref={cursorRingRef} className="custom-cursor-ring" />
+
+      {/* Left editorial column (55%) */}
+      <div 
+        ref={editorialRef}
+        className="editorial-column w-[55%] h-screen relative hidden md:block overflow-hidden"
+      >
+        {/* Dark overlay and slow parallax image */}
+        <div 
+          className="absolute inset-0 w-full h-full object-cover scale-110"
+          data-scroll
+          data-scroll-speed="-2"
+          style={{
+            backgroundImage: "url('/editorial_fashion.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        {/* Dark luxury overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black pointer-events-none opacity-80" />
+        
+        {/* High-fashion brand Statement Pull Quote */}
+        <div className="absolute inset-x-12 bottom-20 z-10 flex flex-col justify-end text-left select-none">
+          <p className="font-logo text-3xl lg:text-4xl italic text-[#F0F0F0] leading-relaxed tracking-wider font-light max-w-xl">
+            "A study in silent luxury. The architecture of modern attire."
+          </p>
+          <div className="h-[1px] w-20 bg-[#C0C0C0] mt-6 opacity-60" />
+          <span className="font-label text-[11px] font-medium tracking-[2px] uppercase text-[#888888] mt-3">
+            LUOMI EDITORIAL STILLS
+          </span>
+        </div>
+      </div>
+
+      {/* Right Form column (45%) */}
+      <div className="form-column w-full md:w-[45%] h-screen bg-[#0A0A0A] flex flex-col justify-between py-12 px-8 sm:px-16 overflow-y-auto z-10 no-scrollbar">
+        {/* Top brand header */}
+        <div className="w-full flex flex-col items-center">
+          <Logo />
+          <div className="divider-line h-[1px] bg-[#1E1E1E] w-full my-6 origin-center" />
+        </div>
+
+        {/* Center Auth Form */}
+        <div className="my-auto w-full max-w-[400px] mx-auto flex flex-col justify-center">
+          {/* Header */}
+          <h1 className="font-heading text-[38px] font-medium text-[#F0F0F0] mb-8 leading-none tracking-tight flex flex-row flex-wrap">
+            {headingText.split(" ").map((word, wordIdx) => (
+              <span key={wordIdx} className="flex flex-row mr-3">
+                {word.split("").map((char, charIdx) => (
+                  <span key={charIdx} className="inline-block heading-char origin-bottom">
+                    {char}
+                  </span>
+                ))}
+              </span>
+            ))}
+          </h1>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="w-full flex flex-col text-left">
+            {/* Error messaging */}
+            {error && (
+              <p className="font-body text-xs text-red-500 mb-4 tracking-wide font-medium uppercase">
+                {error}
+              </p>
+            )}
+
+            {/* Field 1: Email / Contact */}
+            <div className="auth-input-wrapper flex flex-col">
+              <label className="auth-label">Email or Contact Number</label>
+              <input
+                type="text"
+                placeholder="Enter email or contact..."
+                value={emailOrPhone}
+                onChange={(e) => setEmailOrPhone(e.target.value)}
+                className="auth-input"
+              />
+              <span className="input-underline" />
+            </div>
+
+            {/* Field 2: Password */}
+            <div className="auth-input-wrapper flex flex-col relative">
+              <label className="auth-label">Password</label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter password..."
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="auth-input"
+              />
+              <span className="input-underline" />
+              {/* Minimal text show/hide */}
+              <div className="absolute right-4 top-[38px] flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-[11px] font-label font-medium tracking-[1.5px] uppercase text-[#888888] hover:text-[#C0C0C0] transition-colors focus:outline-none cursor-pointer"
+                >
+                  {showPassword ? 'HIDE' : 'SHOW'}
+                </button>
+              </div>
+            </div>
+
+            {/* Forgot password */}
+            <div className="w-full flex justify-end -mt-2 mb-6 footer-animate">
+              <Link 
+                to="/forgot-password" 
+                className="text-xs font-label text-[#888888] hover:text-[#C0C0C0] underline transition-colors"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+
+            {/* CTA Button */}
+            <button
+              ref={buttonRef}
+              type="submit"
+              disabled={loading}
+              className="cta-button"
+            >
+              {loading ? 'AUTHENTICATING...' : 'ENTER LUOMI'}
+            </button>
+          </form>
+
+          {/* Social Divider */}
+          <div className="w-full flex items-center justify-center my-6 footer-animate">
+            <span className="font-label text-[11px] tracking-[1.5px] uppercase text-[#444444]">
+              Or continue with
+            </span>
+          </div>
+
+          {/* Social button */}
+          <button 
+            type="button"
+            className="w-full h-[52px] border-[0.5px] border-[#2A2A2A] bg-transparent text-[#F0F0F0] font-label text-xs uppercase tracking-[2px] rounded-[2px] hover:bg-[#111111] hover:border-[#888888] transition-all cursor-pointer flex items-center justify-center gap-2 footer-animate"
+          >
+            Google Account
+          </button>
+        </div>
+
+        {/* Bottom Footer links */}
+        <div className="w-full text-center flex flex-col items-center gap-4 mt-auto">
+          <p className="font-label text-xs text-[#888888] footer-animate">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-[#F0F0F0] hover:text-[#C0C0C0] underline transition-colors">
+              Create one
+            </Link>
+          </p>
+          <p className="font-legal text-[11px] text-[#444444] tracking-wide footer-animate">
+            © 2026 LUOMI LTD. ALL RIGHTS RESERVED. PRIVACY POLICY & TERMS.
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
