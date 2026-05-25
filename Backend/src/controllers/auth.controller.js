@@ -4,20 +4,25 @@ import jwt from "jsonwebtoken"
 
 
 
-async function tokenresponse(user,res){
+async function tokenresponse(user,res,msg){
    const token = jwt.sign({
     id:user._id,
    },config.JWT)
 
    res.cookie('token',token)
-
+  
+   return res.status(201).json({
+    msg,
+    success:true,
+    user:user
+   })
 
 }
 
 
 
 async function register(req,res){
-  const {email,contact,fullname,password}=req.body
+  const {email,contact,fullname,password,isseller}=req.body
 
 
   try {
@@ -33,22 +38,10 @@ async function register(req,res){
 
 
     const user =await usermodel.create({
-        email,contact,fullname,password
+        email,contact,fullname,password,isseller
     })
 
-  await tokenresponse(user,res);
-
-
-   return res.status(201).json({
-    msg:"user register",
-    user:user
-   })
-
-
-
-
-
-
+  await tokenresponse(user,res,msg="User register successfully");
 
   } catch (error) {
     console.log(error);
@@ -58,17 +51,6 @@ async function register(req,res){
     
   }
   
-
-
-
-
-
-
-
-
-
-
-
 
 }
 async function login(req,res){
