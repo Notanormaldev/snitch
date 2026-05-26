@@ -114,42 +114,11 @@ async function getme(req,res){
         });
      }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+async function googlecallback(req,res){
+  console.log(req.user);
+  res.redirect('http://localhost:5173')
+}
 
 export default {
-    register,login,getme
+    register,login,getme,googlecallback
 }

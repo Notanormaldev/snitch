@@ -328,12 +328,12 @@ function Login() {
           </div>
 
           {/* Social button */}
-          <button 
+          <a href="/api/auth/google"
             type="button"
             className="w-full h-[52px] border-[0.5px] border-[#2A2A2A] bg-transparent text-[#F0F0F0] font-label text-xs uppercase tracking-[2px] rounded-[2px] hover:bg-[#111111] hover:border-[#888888] transition-all cursor-pointer flex items-center justify-center gap-2 footer-animate"
           >
             Google Account
-          </button>
+          </a>
         </div>
 
         {/* Bottom Footer links */}

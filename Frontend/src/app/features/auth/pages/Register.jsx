@@ -378,14 +378,13 @@ function Register() {
           </div>
 
           {/* Google Register Button */}
-          <button 
+          <a href="/api/auth/google"
             type="button" 
-            onClick={() => alert('Registering with Google...')}
             className="w-full h-[44px] border-[0.5px] border-[#2A2A2A] bg-transparent text-[#888888] hover:text-[#C0C0C0] hover:border-[#888888] font-label text-[11px] uppercase tracking-[2px] rounded-[2px] transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <span className="text-[14px] font-semibold">G</span>
             <span className="text-[10px] tracking-[1.5px]">REGISTER WITH GOOGLE</span>
-          </button>
+          </a>
         </div>
 
         {/* Bottom Footer links — with proper breathing room */}
