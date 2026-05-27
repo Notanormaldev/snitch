@@ -248,3 +248,153 @@ label,
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+
+/* Google Sign-In Button Container */
+.google-signin-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Dark Theme Google Button */
+.google-signin-container .google-login-button {
+  width: 100%;
+  min-height: 44px;
+  height: auto;
+  background-color: #121212 !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4),
+              0 2px 6px rgba(0,0,0,0.3) !important;
+
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #ffffff !important;
+
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  padding: 8px 16px !important;
+}
+
+.google-signin-container .google-login-button:hover {
+  background-color: #1c1c1c !important;
+  border-color: #3a3a3a !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.45) !important;
+}
+
+.google-signin-container .google-login-button:active {
+  background-color: #0f0f0f !important;
+  transform: scale(0.99);
+}
+
+/* Google icon */
+.google-signin-container .google-login-button svg {
+  margin-right: 8px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Custom Dark Google Button */
+.google-button-custom {
+  width: 100%;
+  height: 44px;
+
+  background-color: #121212;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4),
+              0 2px 6px rgba(0,0,0,0.3);
+
+  outline: none;
+}
+
+.google-button-custom:hover {
+  background-color: #1c1c1c;
+  border-color: #3a3a3a;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+}
+
+.google-button-custom:active {
+  background-color: #0f0f0f;
+  transform: scale(0.99);
+}
+
+.google-button-custom:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.google-button-custom svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Divider */
+.social-divider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.social-divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: #2a2a2a;
+}
+
+.social-divider-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+
+  color: #888888;
+  white-space: nowrap;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .google-signin-container .google-login-button,
+  .google-button-custom {
+    min-height: 40px;
+    height: 40px;
+    font-size: 12px;
+    padding: 6px 14px !important;
+  }
+
+  .google-button-custom svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .social-divider-text {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+}

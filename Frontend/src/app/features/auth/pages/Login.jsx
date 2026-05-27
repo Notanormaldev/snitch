@@ -4,12 +4,13 @@ import gsap from 'gsap'
 import LocomotiveScroll from 'locomotive-scroll'
 import 'locomotive-scroll/dist/locomotive-scroll.css'
 import Logo from '../components/Logo'
+import GoogleSignInButton from '../components/GoogleSignInButton'
 import { useauth } from '../hook/useauth'
 import './Auth.css'
 
 function Login() {
   const navigate = useNavigate()
-  const { handlelogin, loading } = useauth()
+  const { handlelogin, handlegoogleauth, loading } = useauth()
 
   const [emailOrPhone, setEmailOrPhone] = useState('')
   const [password, setPassword] = useState('')
@@ -321,19 +322,31 @@ function Login() {
           </form>
 
           {/* Social Divider */}
-          <div className="w-full flex items-center justify-center my-6 footer-animate">
-            <span className="font-label text-[11px] tracking-[1.5px] uppercase text-[#444444]">
-              Or continue with
-            </span>
+          <div className="social-divider footer-animate">
+            <div className="social-divider-line" />
+            <span className="social-divider-text">Or continue with</span>
+            <div className="social-divider-line" />
           </div>
 
-          {/* Social button */}
-          <a href="/api/auth/google"
-            type="button"
-            className="w-full h-[52px] border-[0.5px] border-[#2A2A2A] bg-transparent text-[#F0F0F0] font-label text-xs uppercase tracking-[2px] rounded-[2px] hover:bg-[#111111] hover:border-[#888888] transition-all cursor-pointer flex items-center justify-center gap-2 footer-animate"
-          >
-            Google Account
-          </a>
+          {/* Google Sign-In Button */}
+          <div className="google-signin-container footer-animate">
+            <GoogleSignInButton 
+              onSuccess={async (token) => {
+                try {
+                  const res = await handlegoogleauth(token)
+                  if (res && res.success) {
+                    navigate('/')
+                  }
+                } catch (err) {
+                  console.error('Google auth failed:', err)
+                }
+              }}
+              onError={() => {
+                setError('Google sign-in failed. Please try again.')
+              }}
+              mode="login"
+            />
+          </div>
         </div>
 
         {/* Bottom Footer links */}

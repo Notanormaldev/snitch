@@ -4,12 +4,13 @@ import gsap from 'gsap'
 import LocomotiveScroll from 'locomotive-scroll'
 import 'locomotive-scroll/dist/locomotive-scroll.css'
 import Logo from '../components/Logo'
+import GoogleSignInButton from '../components/GoogleSignInButton'
 import { useauth } from '../hook/useauth'
 import './Auth.css'
 
 function Register() {
   const navigate = useNavigate()
-  const { handleregister, loading } = useauth()
+  const { handleregister, handlegoogleauth, loading } = useauth()
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -371,20 +372,31 @@ function Register() {
           </form>
 
           {/* Google Sign Up Divider */}
-          <div className="w-full flex items-center gap-4 mt-5 mb-4">
-            <div className="flex-1 h-[1px] bg-[#1E1E1E]" />
-            <span className="font-label text-[10px] tracking-[1.5px] uppercase text-[#444444] whitespace-nowrap">or</span>
-            <div className="flex-1 h-[1px] bg-[#1E1E1E]" />
+          <div className="social-divider">
+            <div className="social-divider-line" />
+            <span className="social-divider-text">or</span>
+            <div className="social-divider-line" />
           </div>
 
           {/* Google Register Button */}
-          <a href="/api/auth/google"
-            type="button" 
-            className="w-full h-[44px] border-[0.5px] border-[#2A2A2A] bg-transparent text-[#888888] hover:text-[#C0C0C0] hover:border-[#888888] font-label text-[11px] uppercase tracking-[2px] rounded-[2px] transition-all cursor-pointer flex items-center justify-center gap-2"
-          >
-            <span className="text-[14px] font-semibold">G</span>
-            <span className="text-[10px] tracking-[1.5px]">REGISTER WITH GOOGLE</span>
-          </a>
+          <div className="google-signin-container">
+            <GoogleSignInButton 
+              onSuccess={async (token) => {
+                try {
+                  const res = await handlegoogleauth(token)
+                  if (res && res.success) {
+                    navigate('/')
+                  }
+                } catch (err) {
+                  console.error('Google auth failed:', err)
+                }
+              }}
+              onError={() => {
+                setError('Google sign-up failed. Please try again.')
+              }}
+              mode="signup"
+            />
+          </div>
         </div>
 
         {/* Bottom Footer links — with proper breathing room */}

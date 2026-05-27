@@ -1,6 +1,9 @@
 import config from "../config/config.js"
 import usermodel from "../models/user.model.js"
 import jwt from "jsonwebtoken"
+import { OAuth2Client } from 'google-auth-library'
+
+const googleClient = new OAuth2Client(config.GOOGLE_CLIENT_ID)
 
 
 
@@ -119,6 +122,12 @@ async function googlecallback(req,res){
   res.redirect('http://localhost:5173')
 }
 
+
+
 export default {
-    register,login,getme,googlecallback
+    register,
+    login,
+    getme,
+    googlecallback,
+    
 }
