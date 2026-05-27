@@ -10,15 +10,22 @@ import './Auth.css'
 
 function Register() {
   const navigate = useNavigate()
-  const { handleregister, handlegoogleauth, loading } = useauth()
+  const { handleregister, handlegoogleauth, handleverifyotp, loading } = useauth()
 
+  // Step 1: Registration form
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
-  const [contactNumber, setContactNumber] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isSeller, setIsSeller] = useState(false)
   const [error, setError] = useState('')
+
+  // Step 2: OTP verification
+  const [step, setStep] = useState(1) // 1 = register form, 2 = OTP screen
+  const [otp, setOtp] = useState('')
+  const [otpEmail, setOtpEmail] = useState('')
+  const [resendTimer, setResendTimer] = useState(0)
+  const [resendLoading, setResendLoading] = useState(false)
 
   // Refs for GSAP animations
   const scrollRef = useRef(null)
@@ -27,6 +34,17 @@ function Register() {
   const buttonRef = useRef(null)
   const editorialRef = useRef(null)
   const sellerToggleRef = useRef(null)
+
+  // Resend timer effect
+  useEffect(() => {
+    let interval
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1)
+      }, 1000)
+    }
+    return () => clearInterval(interval)
+  }, [resendTimer])
 
   useEffect(() => {
     // 1. Initialize Locomotive Scroll
@@ -99,11 +117,13 @@ function Register() {
     )
 
     // isSeller toggle fades in last and very subtly (max opacity 0.5)
-    entranceTimeline.fromTo(sellerToggleRef.current,
-      { opacity: 0 },
-      { opacity: 0.5, duration: 0.6, ease: 'power2.out' },
-      '-=0.2'
-    )
+    if (sellerToggleRef.current) {
+      entranceTimeline.fromTo(sellerToggleRef.current,
+        { opacity: 0 },
+        { opacity: 0.5, duration: 0.6, ease: 'power2.out' },
+        '-=0.2'
+      )
+    }
 
     // Left editorial column slide-in + blur fade
     gsap.fromTo(editorialRef.current,
@@ -146,11 +166,11 @@ function Register() {
     }
   }, [])
 
-  const handleSubmit = async (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault()
     setError('')
     
-    // Client-side validations matching the backend rules for instant feedback
+    // Client-side validations
     if (!fullName) {
       setError('Full Name is required.')
       return
@@ -163,27 +183,15 @@ function Register() {
       setError('Email address is required.')
       return
     }
-    // Simple email regex check
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       setError('Please enter a valid email address.')
-      return
-    }
-    if (!contactNumber) {
-      setError('Contact number is required.')
-      return
-    }
-    // Contact 10 digit check
-    const contactRegex = /^[0-9]{10}$/
-    if (!contactRegex.test(contactNumber)) {
-      setError('Contact number must be exactly 10 digits.')
       return
     }
     if (!password) {
       setError('Password is required.')
       return
     }
-    // Password complexity check: >= 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special char
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
     if (!passwordRegex.test(password)) {
       setError('Password must be at least 8 characters long, and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).')
@@ -193,17 +201,17 @@ function Register() {
     try {
       const res = await handleregister({
         email,
-        contact: contactNumber,
         fullname: fullName,
         password,
         isseller: isSeller
       })
-      if (res && res.success) {
-        navigate('/')
+      if (res && res.requiresOtp) {
+        setOtpEmail(email)
+        setStep(2)
+        setResendTimer(30)
       }
     } catch (err) {
       if (err.errors && Array.isArray(err.errors)) {
-        // express-validator error array - pick the first error message
         setError(err.errors[0].msg)
       } else if (err.msg) {
         setError(err.msg)
@@ -213,7 +221,70 @@ function Register() {
     }
   }
 
-  const headingText = "Create Account"
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+
+    if (!otp) {
+      setError('OTP is required.')
+      return
+    }
+    if (otp.length !== 6) {
+      setError('OTP must be 6 digits.')
+      return
+    }
+
+    try {
+      const res = await handleverifyotp({
+        email: otpEmail,
+        otp
+      })
+      if (res && res.success) {
+        navigate('/')
+      }
+    } catch (err) {
+      if (err.msg === 'OTP expired') {
+        setError('OTP expired, please register again')
+      } else if (err.msg === 'Account already verified') {
+        setError('Account already exists, please login')
+      } else if (err.msg === 'Invalid OTP') {
+        setError('Invalid OTP, please try again')
+      } else if (err.errors && Array.isArray(err.errors)) {
+        setError(err.errors[0].msg)
+      } else if (err.msg) {
+        setError(err.msg)
+      } else {
+        setError('Something went wrong, please try again')
+      }
+    }
+  }
+
+  const handleResendOtp = async () => {
+    setError('')
+    setResendLoading(true)
+
+    try {
+      const res = await handleregister({
+        email: otpEmail,
+        fullname: fullName,
+        password,
+        isseller: isSeller
+      })
+      if (res && res.requiresOtp) {
+        setResendTimer(30)
+      }
+    } catch (err) {
+      if (err.msg) {
+        setError(err.msg)
+      } else {
+        setError('Failed to resend OTP, please try again.')
+      }
+    } finally {
+      setResendLoading(false)
+    }
+  }
+
+  const headingText = step === 1 ? "Create Account" : "Verify Email"
 
   return (
     <div data-scroll-container ref={scrollRef} className="w-full min-h-screen bg-[#0A0A0A] flex flex-row overflow-hidden relative">
@@ -275,138 +346,193 @@ function Register() {
             ))}
           </h1>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="w-full flex flex-col text-left">
-            {/* Error messaging */}
-            {error && (
-              <p className="font-body text-xs text-red-500 mb-4 tracking-wide font-medium uppercase">
-                {error}
-              </p>
-            )}
+          {step === 1 ? (
+            <>
+              {/* STEP 1: Registration Form */}
+              <form onSubmit={handleRegisterSubmit} className="w-full flex flex-col text-left">
+                {/* Error messaging */}
+                {error && (
+                  <p className="font-body text-xs text-red-500 mb-4 tracking-wide font-medium uppercase">
+                    {error}
+                  </p>
+                )}
 
-            {/* Field 1: Full Name */}
-            <div className="auth-input-wrapper flex flex-col">
-              <label className="auth-label">Full Name</label>
-              <input
-                type="text"
-                placeholder="Enter full name..."
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="auth-input"
-              />
-              <span className="input-underline" />
-            </div>
-
-            {/* Field 2: Email Address */}
-            <div className="auth-input-wrapper flex flex-col">
-              <label className="auth-label">Email Address</label>
-              <input
-                type="email"
-                placeholder="Enter email address..."
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="auth-input"
-              />
-              <span className="input-underline" />
-            </div>
-
-            {/* Field 3: Contact Number */}
-            <div className="auth-input-wrapper flex flex-col">
-              <label className="auth-label">Contact Number</label>
-              <input
-                type="text"
-                placeholder="Enter contact number..."
-                value={contactNumber}
-                onChange={(e) => setContactNumber(e.target.value)}
-                className="auth-input"
-              />
-              <span className="input-underline" />
-            </div>
-
-            {/* Field 4: Password */}
-            <div className="auth-input-wrapper flex flex-col relative">
-              <label className="auth-label">Password</label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Create password..."
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="auth-input"
-              />
-              <span className="input-underline" />
-              {/* Minimal text show/hide */}
-              <div className="absolute right-4 top-[38px] flex items-center">
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-[11px] font-label font-medium tracking-[1.5px] uppercase text-[#888888] hover:text-[#C0C0C0] transition-colors focus:outline-none cursor-pointer"
-                >
-                  {showPassword ? 'HIDE' : 'SHOW'}
-                </button>
-              </div>
-            </div>
-
-            {/* isSeller Pill Switch Toggle (Bottom Right of the Form Area) */}
-            <div className="w-full flex justify-end mb-4">
-              <div 
-                ref={sellerToggleRef}
-                onClick={() => setIsSeller(!isSeller)}
-                className={`switch-container ${isSeller ? 'active' : ''}`}
-              >
-                <span>Register as Seller</span>
-                <div className="pill-switch">
-                  <div className="pill-switch-handle" />
+                {/* Field 1: Full Name */}
+                <div className="auth-input-wrapper flex flex-col">
+                  <label className="auth-label">Full Name</label>
+                  <input
+                    type="text"
+                    placeholder="Enter full name..."
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="auth-input"
+                  />
+                  <span className="input-underline" />
                 </div>
+
+                {/* Field 2: Email Address */}
+                <div className="auth-input-wrapper flex flex-col">
+                  <label className="auth-label">Email Address</label>
+                  <input
+                    type="email"
+                    placeholder="Enter email address..."
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="auth-input"
+                  />
+                  <span className="input-underline" />
+                </div>
+
+                {/* Field 3: Password */}
+                <div className="auth-input-wrapper flex flex-col relative">
+                  <label className="auth-label">Password</label>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Create password..."
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="auth-input"
+                  />
+                  <span className="input-underline" />
+                  {/* Minimal text show/hide */}
+                  <div className="absolute right-4 top-[38px] flex items-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-[11px] font-label font-medium tracking-[1.5px] uppercase text-[#888888] hover:text-[#C0C0C0] transition-colors focus:outline-none cursor-pointer"
+                    >
+                      {showPassword ? 'HIDE' : 'SHOW'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* isSeller Pill Switch Toggle (Bottom Right of the Form Area) */}
+                <div className="w-full flex justify-end mb-4">
+                  <div 
+                    ref={sellerToggleRef}
+                    onClick={() => setIsSeller(!isSeller)}
+                    className={`switch-container ${isSeller ? 'active' : ''}`}
+                  >
+                    <span>Register as Seller</span>
+                    <div className="pill-switch">
+                      <div className="pill-switch-handle" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <button
+                  ref={buttonRef}
+                  type="submit"
+                  disabled={loading}
+                  className="cta-button"
+                >
+                  {loading ? 'CREATING ACCOUNT...' : 'JOIN LUOMI'}
+                </button>
+              </form>
+
+              {/* Google Sign Up Divider */}
+              <div className="social-divider">
+                <div className="social-divider-line" />
+                <span className="social-divider-text">or</span>
+                <div className="social-divider-line" />
               </div>
-            </div>
 
-            {/* CTA Button */}
-            <button
-              ref={buttonRef}
-              type="submit"
-              disabled={loading}
-              className="cta-button"
-            >
-              {loading ? 'CREATING ACCOUNT...' : 'JOIN LUOMI'}
-            </button>
-          </form>
+              {/* Google Register Button */}
+              <div className="google-signin-container">
+                <GoogleSignInButton 
+                  onSuccess={async (token) => {
+                    try {
+                      const res = await handlegoogleauth(token)
+                      if (res && res.success) {
+                        navigate('/')
+                      }
+                    } catch (err) {
+                      console.error('Google auth failed:', err)
+                    }
+                  }}
+                  onError={() => {
+                    setError('Google sign-up failed. Please try again.')
+                  }}
+                  mode="signup"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              {/* STEP 2: OTP Verification */}
+              <form onSubmit={handleOtpSubmit} className="w-full flex flex-col text-left">
+                {/* Error messaging */}
+                {error && (
+                  <p className="font-body text-xs text-red-500 mb-4 tracking-wide font-medium uppercase">
+                    {error}
+                  </p>
+                )}
 
-          {/* Google Sign Up Divider */}
-          <div className="social-divider">
-            <div className="social-divider-line" />
-            <span className="social-divider-text">or</span>
-            <div className="social-divider-line" />
-          </div>
+                {/* OTP sent message */}
+                <p className="font-body text-sm text-[#C0C0C0] mb-6 tracking-wide">
+                  OTP sent to: <span className="font-semibold">{otpEmail}</span>
+                </p>
 
-          {/* Google Register Button */}
-          <div className="google-signin-container">
-            <GoogleSignInButton 
-              onSuccess={async (token) => {
-                try {
-                  const res = await handlegoogleauth(token)
-                  if (res && res.success) {
-                    navigate('/')
-                  }
-                } catch (err) {
-                  console.error('Google auth failed:', err)
-                }
-              }}
-              onError={() => {
-                setError('Google sign-up failed. Please try again.')
-              }}
-              mode="signup"
-            />
-          </div>
+                {/* OTP Input */}
+                <div className="auth-input-wrapper flex flex-col">
+                  <label className="auth-label">Enter OTP</label>
+                  <input
+                    type="text"
+                    placeholder="000000"
+                    maxLength="6"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    className="auth-input otp-input text-center tracking-widest text-2xl"
+                  />
+                  <span className="input-underline" />
+                </div>
+
+                {/* Verify Button */}
+                <button
+                  ref={buttonRef}
+                  type="submit"
+                  disabled={loading}
+                  className="cta-button mt-4"
+                >
+                  {loading ? 'VERIFYING...' : 'VERIFY OTP'}
+                </button>
+              </form>
+
+              {/* Resend OTP Section */}
+              <div className="social-divider mt-6">
+                <div className="social-divider-line" />
+                <span className="social-divider-text">resend</span>
+                <div className="social-divider-line" />
+              </div>
+
+              <button
+                onClick={handleResendOtp}
+                disabled={resendTimer > 0 || resendLoading}
+                className="resend-otp-button"
+              >
+                {resendTimer > 0 ? (
+                  <>
+                    Resend OTP in <span className="ml-1 font-semibold">{resendTimer}s</span>
+                  </>
+                ) : (
+                  resendLoading ? 'SENDING OTP...' : 'RESEND OTP'
+                )}
+              </button>
+            </>
+          )}
         </div>
 
         {/* Bottom Footer links — with proper breathing room */}
         <div className="w-full text-center flex flex-col items-center gap-3 pt-6 shrink-0">
-          <p className="font-label text-xs text-[#888888]">
-            Already have an account?{' '}
-            <Link to="/login" className="text-[#F0F0F0] hover:text-[#C0C0C0] underline transition-colors">
-              Log in
-            </Link>
-          </p>
+          {step === 1 && (
+            <p className="font-label text-xs text-[#888888]">
+              Already have an account?{' '}
+              <Link to="/login" className="text-[#F0F0F0] hover:text-[#C0C0C0] underline transition-colors">
+                Log in
+              </Link>
+            </p>
+          )}
           <p className="font-legal text-[11px] text-[#444444] tracking-wide">
             © 2026 LUOMI LTD. ALL RIGHTS RESERVED.
           </p>
@@ -417,3 +543,4 @@ function Register() {
 }
 
 export default Register
+

@@ -9,8 +9,8 @@ const authrouter = Router()
 
 authrouter.post('/register', validatonregister, authController.register)
 authrouter.post('/login', validatonlogin, authController.login)
+authrouter.post('/verify-otp', authController.verifyotp)
 authrouter.get('/get-me', authtokenmiddleware, authController.getme)
-
 
 authrouter.get('/google',
     passport.authenticate('google', { scope: ['profile', 'email'] })

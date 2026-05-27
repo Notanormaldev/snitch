@@ -2,7 +2,8 @@ import config from "../config/config.js"
 import usermodel from "../models/user.model.js"
 import jwt from "jsonwebtoken"
 import { OAuth2Client } from 'google-auth-library'
-
+import { sendEmail } from "../services/mailer.service.js"
+import { sendOtpEmail,generateOtp } from "../utils/sendotp.js"
 
 
 
@@ -24,45 +25,105 @@ async function tokenresponse(user,res,msg){
 
 }
 async function register(req,res){
-  const {email,contact,fullname,password,isseller}=req.body
-
+   const { email,fullname, password, isseller } = req.body;
 
   try {
     const existuser = await usermodel.findOne({
-        $or:[{email},{contact}]
-    })
+      $or: [{ email }]
+    });
 
-    if(existuser){
-        return res.status(400).json({
-            msg:'user with this email or contact already exist'
-        })
+   
+    if (existuser && !existuser.isverified) {
+      const otp = generateOtp();
+      const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+      await usermodel.findByIdAndUpdate(existuser._id, { otp, otpExpiry });
+      await sendOtpEmail(existuser.email, otp);
+
+      return res.status(200).json({
+        msg: "OTP resent to your email, please verify",
+        success: true,
+        requiresOtp: true,
+        email,
+      });
+    }
+
+    if (existuser && existuser.isverified) {
+      return res.status(400).json({
+        msg: "User with this email or contact already exists"
+      });
     }
 
 
-    const user =await usermodel.create({
-        email,contact,fullname,password,role:isseller ? "seller" :"buyer"
-    })
+    const otp = generateOtp();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-  await tokenresponse(user,res,"User register successfully");
+    await usermodel.create({
+      email, fullname, password,
+      role: isseller ? "seller" : "buyer",
+      otp,
+      otpExpiry,
+      isverified: false,
+    });
+
+    await sendOtpEmail(email, otp);
+
+    return res.status(200).json({
+      msg: "OTP sent to your email, please verify",
+      success: true,
+      requiresOtp: true,
+      email,
+    });
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
-        msg:"server error"
-    })
-    
+    return res.status(500).json({ msg: "Server error" });
   }
-  
+}
+async function verifyotp(req, res) {
+  const { email, otp } = req.body;
 
+  try {
+    const user = await usermodel.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ msg: "User not found, please register again" });
+    }
+
+    if (user.isverified) {
+      return res.status(400).json({ msg: "Already verified, please login" });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(401).json({ msg: "Invalid OTP" });
+    }
+
+    if (user.otpExpiry < new Date()) {
+      return res.status(401).json({ msg: "OTP expired, please register again" });
+    }
+
+    await usermodel.findByIdAndUpdate(user._id, {
+      isverified: true,
+      otp: null,
+      otpExpiry: null,
+    });
+
+    const verifiedUser = await usermodel.findById(user._id);
+    await tokenresponse(verifiedUser, res, "Registration successful");
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Server error" });
+  }
 }
 async function login(req,res){
-  const {contact,email,password} = req.body
+  const {email,password} = req.body
 
   try {
     
   const user = await usermodel.findOne({
     $or:[
-        {email},{contact}
+        {email}
     ]
   }).select('+password')
 
@@ -117,9 +178,6 @@ async function getme(req,res){
         });
      }
 }
-async function verifiedemail(req,res){
-   
-}
 async function googlecallback(req,res){
   console.log(req.user);
   
@@ -156,5 +214,5 @@ export default {
     login,
     getme,
     googlecallback,
-    verifiedemail  
+    verifyotp  
 }

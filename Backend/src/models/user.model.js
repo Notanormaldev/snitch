@@ -34,6 +34,8 @@ const userSchema = mongoose.Schema({
         type:String,
         require:false
     },
+    otp: { type: String },
+    otpExpiry: { type: Date },
     role:{
         type:String,
         enum:["buyer","seller"],
