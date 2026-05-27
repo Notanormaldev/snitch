@@ -15,6 +15,9 @@ if(!process.env.JWT){
     JWT:process.env.JWT,
     GOOGLE_CLIENT_ID:process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET:process.env.GOOGLE_CLIENT_SECRET,
+    BREVO_API_KEY:process.env.BREVO_API_KEY,
+    GOOGLE_EMAIL:process.env.GOOGLE_EMAIL,
+    GOOGLE_APP_PASS:process.env.GOOGLE_APP_PASS,
     NODE_ENVIRONMENT:process.env.NODE_ENVIRONMENT
 }
 
