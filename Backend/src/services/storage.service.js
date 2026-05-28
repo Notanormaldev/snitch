@@ -12,6 +12,8 @@ export async function uploadfile({buffer,fileName,folder='Luomi'}){
     fileName,
     folder
   })
+
+  return result
 }
 
 
