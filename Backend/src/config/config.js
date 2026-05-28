@@ -12,6 +12,7 @@ const requireenvs=[
     "REDIS_HOST",
     "REDIS_PORT",
     "REDIS_PASSWORD",
+    "IMAGEKIT_PRIVATE_KEY",
     "NODE_ENVIRONMENT"
 ]
 requireenvs.forEach((key)=>{
@@ -34,6 +35,7 @@ requireenvs.forEach((key)=>{
     REDIS_HOST:process.env.REDIS_HOST,
     REDIS_PORT:process.env.REDIS_PORT,
     REDIS_PASSWORD:process.env.REDIS_PASSWORD,
+    IMAGEKIT_PRIVATE_KEY:process.env.IMAGEKIT_PRIVATE_KEY,
     NODE_ENVIRONMENT:process.env.NODE_ENVIRONMENT
 }
 
