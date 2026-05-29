@@ -4,7 +4,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const productSlice =createSlice({
     name:"product",
     initialState:{
-        sellerproducts:[]
+        sellerproducts:[],
+        products:[]
     },
     reducers:{
         setSellerprodcuts:(state,action)=>{

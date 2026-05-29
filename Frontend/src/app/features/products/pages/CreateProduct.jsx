@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MdCloudUpload } from 'react-icons/md'
-import { FiPlus, FiTrash2 } from 'react-icons/fi'
+import { FiPlus, FiTrash2, FiArrowLeft } from 'react-icons/fi'
 import Logo from '../../auth/components/Logo'
 import { useproduct } from '../hook/useproduct'
 import './CreateProduct.css'
@@ -174,7 +174,7 @@ function CreateProduct() {
           setSuccess('')
 
           // Navigate to products dashboard after reset
-          navigate('/products/seller')
+          navigate('/dashbord/seller')
         }, 3000)
       } else {
         setError(result.error || 'Failed to create product. Please try again.')
@@ -212,8 +212,18 @@ function CreateProduct() {
     <div className="createproduct-container">
       <div className="createproduct-wrapper">
         <div className="createproduct-header-section">
-          <div className="createproduct-logo">
-            <Logo />
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => navigate('/dashbord/seller')}
+              className="flex items-center justify-center w-9 h-9 rounded-xl  text-[#888888] hover:text-[#FFFFFF] hover:border-[rgba(255,255,255,0.25)] transition-all cursor-pointer "
+              title="Back to Dashboard"
+            >
+              <FiArrowLeft size={16} />
+            </button>
+            <div className="createproduct-logo">
+              <Logo />
+            </div>
           </div>
           <div className="createproduct-header-text">
             <h1 className="createproduct-title">List a New Product</h1>
