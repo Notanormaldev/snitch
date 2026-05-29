@@ -38,7 +38,22 @@ async function createproduct(req,res){
   })
 }
 async function sellergetproducts(req,res){
+     const user=req.user
+      
+     const products = await productmodel.find({seller:user._id})
 
+
+     if(!products){
+      return res.status(404).json({
+        msg:"404 Empty prodcuts"
+      })
+     }
+
+     return res.status(200).json({
+      msg:"products fetch successfully",
+      success:true,
+      products
+     })
 }
 
 export default {

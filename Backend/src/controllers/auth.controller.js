@@ -180,7 +180,7 @@ async function getme(req,res){
      }
 }
 async function googlecallback(req,res){
-  console.log(req.user);
+  // console.log(req.user);
   
   const {emails,id,displayName,photos} = req.user
   const email=emails[0].value

@@ -16,7 +16,7 @@ export async function authsellermiddleware(req,res,next){
         const decoded=jwt.verify(token,config.JWT)
          if(decoded.user.role!=="seller"){
        return res.status(403).json({
-        msg:"only seller can create product"
+        msg:"only seller can see this action"
        })
       } 
         req.user=decoded.user

@@ -13,5 +13,5 @@ const upload=multer(
 
 const productroute=Router()
 productroute.post('/createproduct',upload.array("images",7),authsellermiddleware,validatecreateproduct,productController.createproduct)
-productroute.get('getproduct/seller',authsellermiddleware,productController.sellergetproducts)
+productroute.get('/getproduct/seller',authsellermiddleware,productController.sellergetproducts)
 export default productroute
