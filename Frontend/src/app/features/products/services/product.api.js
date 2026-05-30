@@ -34,11 +34,19 @@ export async function getsellerproduct(){
 export async function getallproducts(){
     try {
          const res = await productapi.get('/')
-         
-         
         return res.data
     } catch (error) {
          console.log("Api error:", error)
         throw error.response?.data || { msg: "Failed to fetch products" }
+    }
+}
+
+export async function getoneproduct({productid}){
+    try {
+        const res=await productapi.get(`/${productid}`)
+        return res.data
+    } catch (error) {
+         console.log("Api error:", error)
+        throw error.response?.data || { msg: "Failed to fetch product" }
     }
 }

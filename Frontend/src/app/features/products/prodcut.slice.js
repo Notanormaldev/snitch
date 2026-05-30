@@ -11,9 +11,7 @@ const productSlice =createSlice({
         setSellerproducts:(state,action)=>{
             state.sellerproducts=action.payload
         },
-        setproducts:(state,action)=>{
-            
-            
+        setproducts:(state,action)=>{       
             state.products=action.payload
         }
     }
