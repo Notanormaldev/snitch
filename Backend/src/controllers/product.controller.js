@@ -64,6 +64,23 @@ async function getallproducts(req,res){
       products
      })
 }
+async function getoneproduct(req,res){
+  const {id}=req.params
+
+  const product = await productmodel.findById(id)
+  
+  if(!product){
+    return res.status(404).json({
+      msg:"No Product by this id"
+    })
+  }
+
+  return res.status(200).json({
+    msg:"Product fetched",
+    success:true,
+    product
+  })
+}
 export default {
-    createproduct,sellergetproducts,getallproducts
+    createproduct,sellergetproducts,getallproducts,getoneproduct
 }

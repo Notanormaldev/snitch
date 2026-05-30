@@ -405,7 +405,9 @@ function Home() {
 
       {/* Product Detail Modal */}
       {selectedProduct && (
-        <div className="modal-overlay" onClick={() => setSelectedProduct(null)}>
+        <div className="modal-overlay" onClick={() => setSelectedProduct(null)} onClick={()=>{
+          navigate(`/product/${selectedProduct._id}`)
+        }}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setSelectedProduct(null)}>
               <FiX size={15} />

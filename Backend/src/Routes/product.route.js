@@ -15,4 +15,5 @@ const productroute=Router()
 productroute.post('/createproduct',upload.array("images",7),authsellermiddleware,validatecreateproduct,productController.createproduct)
 productroute.get('/getproduct/seller',authsellermiddleware,productController.sellergetproducts)
 productroute.get('/',productController.getallproducts)
+productroute.get('/:id',productController.getoneproduct)
 export default productroute
